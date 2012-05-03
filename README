@@ -1,0 +1,45 @@
+The best way to really learn a system is to write code against it. I spent some time over a weekend and started writing a Python wrapper on top of our storage APIs. I’ve gotten it to the point where I can authenticate against a storage endpoint, be it development storage on your local machine or the *.core.windows.net endpoints in the sky. I spent some time today implementing the basic blob primitives. Though it is raw, I’m making the code public since I thought it would be instructive for folks trying to figure out how authentication works or trying to implement wrappers in other languages.
+
+I’m hosting the code at a GitHub repository here and you can follow commits as I make them. I’m hoping to get all the blob primitives done by the end of the week and queues if possible. I need to spend some time thinking about what the right way to model table storage in Python is. Here is some sample code below to put and get a blob and a container out of storage
+
+    conn = WAStorageConnection(DEVSTORE_HOST, DEVSTORE_ACCOUNT, DEVSTORE_SECRET_KEY)
+        for (container_name,etag, last_modified ) in  conn.list_containers():
+            print container_name
+            print etag
+            print last_modified
+            
+        conn.create_container("testcontainer", False)
+        conn.put_blob("testcontainer","test","Hello World!" )
+        print conn.get_blob("testcontainer", "test")
+
+Here’s the magic signing code. This is based on my reading of the docs so this shouldn’t be considered ‘official’ in any way (consult the SDK sample for something of production quality)
+
+    def _get_auth_header(self, http_method, path, data, headers):
+            # As documented at http://msdn.microsoft.com/en-us/library/dd179428.aspx
+            string_to_sign =""
+            
+            #First element is the method
+            string_to_sign += http_method + NEW_LINE
+            
+            #Second is the optional content MD5
+            string_to_sign += NEW_LINE
+            
+            #content type - this should have been initialized atleast to a blank value
+            if headers.has_key("content-type"):
+                string_to_sign += headers["content-type"] 
+            string_to_sign += NEW_LINE
+            
+            # date - we don't need to add header here since the special date storage header
+            # always exists in our implementation
+            string_to_sign +=  NEW_LINE
+            
+            # Construct canonicalized storage headers. 
+            # TODO: Note that this doesn't implement parts of the spec - combining header fields with same name,
+            # unfolding long lines and trimming white spaces around the colon
+            
+            ms_headers =[header_key for header_key in headers.keys() if header_key.startswith(PREFIX_STORAGE_HEADER)]
+            ms_headers.sort()
+
+NOTE: This is code written by a program manager with too much free time :-). Use at your own risk and don’t blame me if your computer blows up or if demons fly out of your nose.
+
+Thanks to Igor Dvorkin for helping me out with this.
