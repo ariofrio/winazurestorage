@@ -170,7 +170,7 @@ class QueueStorage(Storage):
         data = "<QueueMessage><MessageText>%s</MessageText></QueueMessage>" % base64.encodestring(payload)
         req = RequestWithMethod("POST", "%s/%s/messages" % (self.get_base_url(), queue_name), data=data)
         req.add_header("Content-Type", "application/xml")
-        req.add_header("Content-Length", len(data))
+        req.add_header("Content-Length", "%d" % len(data))
         self._credentials.sign_request(req)
         try:
             response = urlopen(req)
