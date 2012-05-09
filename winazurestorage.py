@@ -40,6 +40,8 @@ DEBUG = False
 
 TIME_FORMAT ="%a, %d %b %Y %H:%M:%S %Z"
 
+def xstr(s): return '' if s is None else str(s)
+
 def parse_edm_datetime(input):
     d = datetime.strptime(input[:input.find('.')], "%Y-%m-%dT%H:%M:%S")
     if input.find('.') != -1:
@@ -85,7 +87,7 @@ class SharedKeyCredentials(object):
         if not for_tables:
             string_to_sign += (request.get_header('Content-encoding') or '') + NEW_LINE
             string_to_sign += (request.get_header('Content-language') or '') + NEW_LINE
-            string_to_sign += (request.get_header('Content-length') or '') + NEW_LINE
+            string_to_sign += xstr(request.get_header('Content-length')) + NEW_LINE
         string_to_sign += (request.get_header('Content-md5') or '') + NEW_LINE
         string_to_sign += (request.get_header('Content-type') or '') + NEW_LINE
         string_to_sign += (request.get_header('Date') or '') + NEW_LINE
@@ -149,7 +151,7 @@ class QueueStorage(Storage):
 
     def create_queue(self, name):
         req = RequestWithMethod("PUT", "%s/%s" % (self.get_base_url(), name))
-        req.add_header("Content-Length", "0")
+        req.add_header("Content-Length", 0)
         self._credentials.sign_request(req)
         try:
             response = urlopen(req)
@@ -226,7 +228,7 @@ class TableStorage(Storage):
   </content>
 </entry>""" % (time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime()), name)
         req = RequestWithMethod("POST", "%s/Tables" % self.get_base_url(), data=data)
-        req.add_header("Content-Length", "%d" % len(data))
+        req.add_header("Content-Length", len(data))
         req.add_header("Content-Type", "application/atom+xml")
         self._credentials.sign_table_request(req)
         try:
@@ -294,7 +296,7 @@ class BlobStorage(Storage):
 
     def create_container(self, container_name, is_public = False):
         req = RequestWithMethod("PUT", "%s/%s?restype=container" % (self.get_base_url(), container_name))
-        req.add_header("Content-Length", "0")
+        req.add_header("Content-Length", 0)
         if is_public: req.add_header(PREFIX_PROPERTIES + "publicaccess", "true")
         self._credentials.sign_request(req)
         try:
@@ -327,7 +329,7 @@ class BlobStorage(Storage):
 
     def put_blob(self, container_name, blob_name, data, content_type = "", metadata = {}):
         req = RequestWithMethod("PUT", "%s/%s/%s" % (self.get_base_url(), container_name, blob_name), data=data)
-        req.add_header("Content-Length", "%d" % len(data))
+        req.add_header("Content-Length", len(data))
         req.add_header('x-ms-blob-type', 'BlockBlob')
         for key, value in metadata.items():
             req.add_header("x-ms-meta-%s" % key, value)
@@ -391,7 +393,7 @@ class BlobStorage(Storage):
         encoded_block_id = urlencode({"comp": "block", "blockid": block_id})
         req = RequestWithMethod("PUT", "%s/%s/%s?%s" % (self.get_base_url(), container_name, blob_name, encoded_block_id), data=data)
         req.add_header("Content-Type", "")
-        req.add_header("Content-Length", "%d" % len(data))
+        req.add_header("Content-Length", len(data))
         self._credentials.sign_request(req)
         try:
             response = urlopen(req)
