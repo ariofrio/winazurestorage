@@ -151,20 +151,14 @@ class QueueStorage(Storage):
         req = RequestWithMethod("PUT", "%s/%s" % (self.get_base_url(), name))
         req.add_header("Content-Length", "0")
         self._credentials.sign_request(req)
-        try:
-            response = urlopen(req)
-            return response.code
-        except URLError, e:
-            return e.code
+        response = urlopen(req)
+        return response.code
 
     def delete_queue(self, name):
         req = RequestWithMethod("DELETE", "%s/%s" % (self.get_base_url(), name))
         self._credentials.sign_request(req)
-        try:
-            response = urlopen(req)
-            return response.code
-        except URLError, e:
-            return e.code
+        response = urlopen(req)
+        return response.code
             
     def put_message(self, queue_name, payload):
         data = "<QueueMessage><MessageText>%s</MessageText></QueueMessage>" % base64.encodestring(payload)
@@ -172,11 +166,8 @@ class QueueStorage(Storage):
         req.add_header("Content-Type", "application/xml")
         req.add_header("Content-Length", len(data))
         self._credentials.sign_request(req)
-        try:
-            response = urlopen(req)
-            return response.code
-        except URLError, e:
-            return e.code
+        response = urlopen(req)
+        return response.code
 
     def get_message(self, queue_name):
         req = Request("%s/%s/messages" % (self.get_base_url(), queue_name))
@@ -198,11 +189,8 @@ class QueueStorage(Storage):
         pop_receipt = message.pop_receipt
         req = RequestWithMethod("DELETE", "%s/%s/messages/%s?popreceipt=%s" % (self.get_base_url(), queue_name, id, pop_receipt))
         self._credentials.sign_request(req)
-        try:
-            response = urlopen(req)
-            return response.code
-        except URLError, e:
-            return e.code
+        response = urlopen(req)
+        return response.code
 
 class TableStorage(Storage):
     '''Due to local development storage not supporting SharedKey authentication, this class
@@ -229,20 +217,14 @@ class TableStorage(Storage):
         req.add_header("Content-Length", "%d" % len(data))
         req.add_header("Content-Type", "application/atom+xml")
         self._credentials.sign_table_request(req)
-        try:
-            response = urlopen(req)
-            return response.code
-        except URLError, e:
-            return e.code
+        response = urlopen(req)
+        return response.code
 
     def delete_table(self, name):
         req = RequestWithMethod("DELETE", "%s/Tables('%s')" % (self.get_base_url(), name))
         self._credentials.sign_table_request(req)
-        try:
-            response = urlopen(req)
-            return response.code
-        except URLError, e:
-            return e.code
+        response = urlopen(req)
+        return response.code
 
     def list_tables(self):
         req = Request("%s/Tables" % self.get_base_url())
@@ -297,20 +279,14 @@ class BlobStorage(Storage):
         req.add_header("Content-Length", "0")
         if is_public: req.add_header(PREFIX_PROPERTIES + "publicaccess", "true")
         self._credentials.sign_request(req)
-        try:
-            response = urlopen(req)
-            return response.code
-        except URLError, e:
-            return e.code
+        response = urlopen(req)
+        return response.code
 
     def delete_container(self, container_name):
         req = RequestWithMethod("DELETE", "%s/%s?restype=container" % (self.get_base_url(), container_name))
         self._credentials.sign_request(req)
-        try:
-            response = urlopen(req)
-            return response.code
-        except URLError, e:
-            return e.code
+        response = urlopen(req)
+        return response.code
 
     def list_containers(self):
         req = Request("%s/?comp=list" % self.get_base_url())
@@ -333,11 +309,8 @@ class BlobStorage(Storage):
             req.add_header("x-ms-meta-%s" % key, value)
         req.add_header("Content-Type", content_type)
         self._credentials.sign_request(req)
-        try:
-            response = urlopen(req)
-            return response.code
-        except URLError, e:
-            return e.code
+        response = urlopen(req)
+        return response.code
 
     def delete_blob(self, container_name, blob_name):
         req = RequestWithMethod("DELETE", "%s/%s/%s" % (self.get_base_url(), container_name, blob_name))
@@ -393,11 +366,8 @@ class BlobStorage(Storage):
         req.add_header("Content-Type", "")
         req.add_header("Content-Length", "%d" % len(data))
         self._credentials.sign_request(req)
-        try:
-            response = urlopen(req)
-            return response.code
-        except URLError, e:
-            return e.code
+        response = urlopen(req)
+        return response.code
 
 def main():
     pass
