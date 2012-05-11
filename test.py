@@ -37,6 +37,10 @@ def do_queue_tests(account, key):
     if account is None or key is None: queues = QueueStorage()
     else: queues = QueueStorage(CLOUD_QUEUE_HOST, account, key)
     print "\tcreate_queue: %d" % queues.create_queue("testqueue")
+    print "\tput_message: %d" % queues.put_message("testqueue", "hello world")
+    msg = queues.get_message("testqueue")
+    print "\tget_message: %s" % msg.text
+    print "\tdelete_message: %s" % queues.delete_message("testqueue", msg)
     print "\tdelete_queue: %d" % queues.delete_queue("testqueue")
     print "Done"
 
